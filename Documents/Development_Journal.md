@@ -375,3 +375,35 @@ The project successfully transitioned from code-only to a working PostgreSQL-bac
 ## Notes
 
 Version 1 now moves from infrastructure into real business functionality.
+# Sprint 12 – Authentication Foundation
+
+## Objectives
+
+- Organize authentication folders.
+- Design authentication architecture.
+- Prepare JWT authentication.
+- Implement password hashing.
+- Design user registration workflow.
+- Prepare login workflow.
+- Prepare user repository.
+- Prepare token generation.
+
+## Completed
+
+- Created Authentication folder structure.
+- Created DTOs for Registration and Login.
+- Created IAuthService.
+- Created IJwtTokenService.
+- Created IPasswordService.
+- Implemented PasswordService.
+- Implemented JwtTokenService.
+- Implemented AuthService.
+- Implemented UserRepository.
+- Registered services using Dependency Injection.
+- Configured JWT Settings.
+- Prepared Login and Registration endpoints.
+- Verified project builds successfully.
+
+## Result
+
+LoanLedger now has a complete Authentication Foundation ready for secure user authentication and authorization.

@@ -3,6 +3,7 @@ using System;
 using LoanLedger.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace LoanLedger.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(LoanLedgerDbContext))]
-    partial class LoanLedgerDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260806083718_ExpandUserEntity")]
+    partial class ExpandUserEntity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

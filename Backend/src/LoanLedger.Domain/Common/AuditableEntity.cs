@@ -1,6 +1,6 @@
 namespace LoanLedger.Domain.Common;
 
-public abstract class AuditableEntity : BaseEntity
+public abstract class AuditableEntity
 {
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
@@ -8,5 +8,5 @@ public abstract class AuditableEntity : BaseEntity
 
     public DateTime? DeletedAt { get; set; }
 
-    public bool IsDeleted { get; set; } = false;
+    public bool IsDeleted { get; set; }
 }

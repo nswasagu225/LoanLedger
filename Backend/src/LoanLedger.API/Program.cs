@@ -1,16 +1,27 @@
-using Microsoft.EntityFrameworkCore;
+using LoanLedger.Application.Interfaces;
+using LoanLedger.Infrastructure.Identity;
 using LoanLedger.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
+using LoanLedger.Infrastructure.Repositories;
+using LoanLedger.Application.Authentication;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddControllers();
 
 builder.Services.AddDbContext<LoanLedgerDbContext>(options =>
     options.UseNpgsql(
         builder.Configuration.GetConnectionString("LoanLedgerConnection")));
+
+builder.Services.AddScoped<IPasswordService, PasswordService>();
+builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+
 // Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
+app.MapControllers();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
