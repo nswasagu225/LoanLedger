@@ -361,3 +361,17 @@ Objectives
 ## Notes
 
 The project successfully transitioned from code-only to a working PostgreSQL-backed application.
+
+# Sprint 11 – Domain Expansion
+
+## Objectives
+
+- Expand User entity.
+- Prepare Authentication.
+- Design Workspace model.
+- Design Contact model.
+- Improve Dashboard architecture.
+
+## Notes
+
+Version 1 now moves from infrastructure into real business functionality.
