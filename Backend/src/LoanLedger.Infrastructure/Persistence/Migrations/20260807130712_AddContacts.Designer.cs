@@ -3,6 +3,7 @@ using System;
 using LoanLedger.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace LoanLedger.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(LoanLedgerDbContext))]
-    partial class LoanLedgerDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260807130712_AddContacts")]
+    partial class AddContacts
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -91,40 +94,6 @@ namespace LoanLedger.Infrastructure.Persistence.Migrations
                     b.ToTable("Contacts");
                 });
 
-            modelBuilder.Entity("LoanLedger.Domain.Entities.LoanCategory", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Color")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Icon")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<bool>("IsArchived")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsDefault")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("LoanCategories");
-                });
-
             modelBuilder.Entity("LoanLedger.Domain.Entities.User", b =>
                 {
                     b.Property<Guid>("Id")
@@ -187,22 +156,9 @@ namespace LoanLedger.Infrastructure.Persistence.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("LoanLedger.Domain.Entities.LoanCategory", b =>
-                {
-                    b.HasOne("LoanLedger.Domain.Entities.User", "User")
-                        .WithMany("LoanCategories")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("LoanLedger.Domain.Entities.User", b =>
                 {
                     b.Navigation("Contacts");
-
-                    b.Navigation("LoanCategories");
                 });
 #pragma warning restore 612, 618
         }

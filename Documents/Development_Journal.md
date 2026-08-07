@@ -431,3 +431,138 @@ LoanLedger now has a complete Authentication Foundation ready for secure user au
 ✓ PostgreSQL user persistence
 
 ✓ Login by Email or Phone support
+
+Date: 07 August 2026
+
+Sprint 12 Completed
+
+Completed:
+- Password hashing
+- JWT authentication
+- User registration
+- Login using email
+- Login using phone number
+- Duplicate email validation
+- Last login tracking
+- API testing using Postman
+
+Result:
+Authentication module is fully operational.
+
+# Sprint 13 – Contacts Module
+
+## Objectives
+
+- Design Contact entity
+- Implement Contact Repository
+- Implement Contact Service
+- Implement Contact API
+- Connect Contacts to Users
+- Prevent duplicate contacts
+- Test Contacts API
+
+---
+
+## Completed
+
+### Domain
+- Contact entity created
+- User → Contacts relationship added
+
+### Infrastructure
+- ContactRepository implemented
+- Entity Framework configuration completed
+- PostgreSQL migration created
+- Database updated successfully
+
+### Application
+- ContactService implemented
+- Create Contact logic completed
+- Get Contacts logic completed
+- Duplicate contact validation added
+
+### API
+- ContactsController created
+- POST /api/Contacts
+- GET /api/Contacts/{userId}
+
+### Testing
+- Contact creation tested successfully
+- Contact retrieval tested successfully
+- Duplicate contact validation verified
+
+---
+
+## Result
+
+The Contacts module is production-ready and integrated with the Authentication module.
+
+Status:
+✅ Completed
+
+# Sprint 14 – Loan Categories
+
+## Objectives
+
+- Design LoanCategory entity
+- Connect LoanCategory to User
+- Configure Entity Framework relationship
+- Prepare Category DTOs
+- Prepare Category Service interface
+
+---
+
+## Completed
+
+### Domain
+- LoanCategory entity created
+- User → LoanCategories relationship added
+
+### Infrastructure
+- DbSet<LoanCategory> added
+- Entity Framework relationship configured
+
+### Application
+- CreateCategoryRequest
+- CreateCategoryResponse
+- CategoryDto
+- ICategoryService
+
+---
+
+Status
+
+🟡 In Progress
+## Completed
+
+- Category Repository
+- Category Service
+- Categories Controller
+- Create Category API
+- Get Categories API
+
+Status
+
+🟡 Ready for Testing
+# Sprint 14 – Loan Categories
+
+## Objectives
+
+- Category Entity
+- Category Repository
+- Category Service
+- Category API
+- Category Testing
+
+## Completed
+
+- Created LoanCategory entity
+- Repository implemented
+- Service implemented
+- REST API implemented
+- Duplicate category validation
+- User-specific category retrieval
+
+Status
+
+🟢 Completed

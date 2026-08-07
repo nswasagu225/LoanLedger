@@ -21,4 +21,8 @@ public class User : AuditableEntity
     public bool IsActive { get; set; } = true;
 	
 	public DateTime? LastLoginAt { get; set; }
+	public ICollection<Contact> Contacts { get; set; }
+    = new List<Contact>();
+	public ICollection<LoanCategory> LoanCategories { get; set; }
+    = new List<LoanCategory>();
 }

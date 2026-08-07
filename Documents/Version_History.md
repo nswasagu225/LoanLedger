@@ -69,3 +69,79 @@ Authentication foundation completed successfully.
 - User Repository implemented.
 - Dependency Injection configured.
 - Application builds successfully.
+
+Version 0.0.2
+
+Release Date:
+07 August 2026
+
+Completed
+
+- Authentication module
+- User registration
+- Login
+- JWT authentication
+- Password hashing
+- PostgreSQL integration
+- Repository Pattern
+- API testing
+
+Status
+
+Authentication foundation completed successfully.
+
+---
+
+## Version 0.0.2
+
+Release Date:
+07 August 2026
+
+### Added
+
+Authentication Module
+
+- User Registration
+- Login with Email
+- Login with Phone Number
+- Password Hashing
+- JWT Token Authentication
+
+Contacts Module
+
+- Contact Management
+- Create Contact API
+- Get Contacts API
+- Duplicate Contact Validation
+
+Database
+
+- PostgreSQL integration
+- Entity Framework migrations
+- User-Contact relationship
+
+Testing
+
+- Registration tested
+- Login tested
+- Contacts tested
+
+Status
+
+Backend foundation completed successfully.
+## Version 0.0.4
+
+Release Date: 07 August 2026
+
+### Added
+
+- Contact Management
+- Loan Categories
+- Category Repository
+- Category Service
+- Category API
+- Contact API improvements
+
+### Status
+
+Core reference data modules completed.
