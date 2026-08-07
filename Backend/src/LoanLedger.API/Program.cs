@@ -4,9 +4,39 @@ using LoanLedger.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using LoanLedger.Infrastructure.Repositories;
 using LoanLedger.Application.Authentication;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
+
+builder.Services.AddAuthentication(
+    JwtBearerDefaults.AuthenticationScheme)
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters =
+        new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+
+            ValidIssuer =
+                builder.Configuration["JwtSettings:Issuer"],
+
+            ValidAudience =
+                builder.Configuration["JwtSettings:Audience"],
+
+            IssuerSigningKey =
+                new SymmetricSecurityKey(
+                    Encoding.UTF8.GetBytes(
+                        builder.Configuration["JwtSettings:SecretKey"]!))
+        };
+});
+
+builder.Services.AddAuthorization();
 
 builder.Services.AddDbContext<LoanLedgerDbContext>(options =>
     options.UseNpgsql(
@@ -21,7 +51,6 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
-app.MapControllers();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -30,6 +59,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseAuthentication();
+app.UseAuthorization();
+app.MapControllers();
 
 var summaries = new[]
 {

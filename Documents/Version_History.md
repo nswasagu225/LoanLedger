@@ -33,3 +33,39 @@ Completed
 Status
 
 Environment setup completed.
+
+## Version 0.0.2
+
+Release Date:
+06 August 2026
+
+Completed
+
+- Entity Framework Core integration
+- PostgreSQL database connection
+- Initial database migration
+- User entity
+- User repository
+- Password hashing
+- Registration API
+- Login API
+- JWT token service
+- Authentication architecture
+- OpenAPI endpoints
+
+Status
+
+Authentication foundation completed successfully.
+
+## Version 0.12.0
+
+### Authentication Foundation
+
+- Authentication architecture completed.
+- Password hashing implemented.
+- JWT infrastructure implemented.
+- Registration service implemented.
+- Login infrastructure prepared.
+- User Repository implemented.
+- Dependency Injection configured.
+- Application builds successfully.

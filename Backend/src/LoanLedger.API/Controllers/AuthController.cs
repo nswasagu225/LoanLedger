@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace LoanLedger.API.Controllers;
 
 [ApiController]
-[Route("api/auth")]
+[Route("api/[controller]")]
 public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
@@ -16,9 +16,25 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("register")]
-    public async Task<IActionResult> Register(RegisterUserRequest request)
+    public async Task<ActionResult<RegisterUserResponse>> Register(
+        RegisterUserRequest request)
     {
         var result = await _authService.RegisterAsync(request);
+
+        if (!result.Success)
+            return BadRequest(result);
+
+        return Ok(result);
+    }
+
+    [HttpPost("login")]
+    public async Task<ActionResult<LoginResponse>> Login(
+        LoginRequest request)
+    {
+        var result = await _authService.LoginAsync(request);
+
+        if (!result.Success)
+            return BadRequest(result);
 
         return Ok(result);
     }

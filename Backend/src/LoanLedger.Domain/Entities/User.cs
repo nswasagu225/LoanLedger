@@ -19,4 +19,6 @@ public class User : AuditableEntity
     public bool IsPhoneVerified { get; set; }
 
     public bool IsActive { get; set; } = true;
+	
+	public DateTime? LastLoginAt { get; set; }
 }
