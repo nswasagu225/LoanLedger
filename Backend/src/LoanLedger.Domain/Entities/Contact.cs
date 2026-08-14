@@ -36,4 +36,6 @@ public class Contact : AuditableEntity
     public string? ProfilePhoto { get; set; }
 
     public User User { get; set; } = null!;
+	public ICollection<Loan> Loans { get; set; }
+    = new List<Loan>();
 }

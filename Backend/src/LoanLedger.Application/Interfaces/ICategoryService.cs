@@ -4,7 +4,11 @@ namespace LoanLedger.Application.Interfaces;
 
 public interface ICategoryService
 {
-    Task<CreateCategoryResponse> CreateAsync(CreateCategoryRequest request);
+Task<CreateCategoryResponse> CreateAsync(
+Guid userId,
+CreateCategoryRequest request);
 
-    Task<List<CategoryDto>> GetByUserAsync(Guid userId);
+Task<List<CategoryDto>> GetByUserAsync(
+    Guid userId);
+
 }

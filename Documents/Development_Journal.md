@@ -566,3 +566,742 @@ Status
 Status
 
 🟢 Completed
+
+# Sprint 15 – Loan Categories
+
+## Objectives
+
+- Create Category entity
+- Create Category repository
+- Create Category service
+- Create Category controller
+- Prevent duplicate category names
+- Test Category APIs
+
+## Completed
+
+✔ Category entity
+✔ Category repository
+✔ Category service
+✔ Category controller
+✔ Create Category API
+✔ Get Categories API
+✔ Duplicate validation
+✔ EF Migration
+✔ PostgreSQL update
+✔ Postman testing
+
+Status
+
+Completed successfully.
+Sprint 15 – Loan Accounts Foundation
+
+Completed
+- Loan entity created
+- Loan relationships established
+- EF Core migration added
+- Loan table created
+
+Sprint 16 – Loan Accounts
+
+Completed
+- Loan DTOs
+- Loan repository
+- Loan repository interface
+- Repository registration
+
+Sprint 17 – Loan Service
+
+Completed
+- Loan service
+- Loan controller
+- Loan creation endpoint
+- Loan retrieval endpoint
+
+
+# Sprint 18 – Loan Transactions
+
+## Objectives
+
+* Create the `LoanTransaction` entity
+* Create transaction type enum
+* Create payment method enum
+* Establish Loan → LoanTransaction relationship
+* Create transaction repository
+* Create transaction repository interface
+* Create transaction service
+* Create transaction response DTO
+* Create transaction controller
+* Implement transaction creation
+* Implement repayment balance validation
+* Implement disbursement and other balance adjustments
+* Implement transaction retrieval APIs
+* Implement loan transaction history API
+* Implement transaction deletion
+* Automatically reverse the loan balance when a transaction is deleted
+* Improve API responses with transaction type and payment method names
+* Test transaction APIs
+* Verify loan balance after transaction operations
+
+## Completed
+
+✔ `LoanTransaction` entity created
+
+✔ `LoanTransactionType` enum created
+
+✔ `PaymentMethod` enum created
+
+✔ `LoanTransaction` → `Loan` relationship configured
+
+✔ `LoanTransactions` DbSet added
+
+✔ EF Core migration completed successfully
+
+✔ PostgreSQL database updated
+
+✔ `ILoanTransactionRepository` created
+
+✔ `LoanTransactionRepository` created
+
+✔ `LoanTransactionService` created
+
+✔ `LoanTransactionResponse` created
+
+✔ `LoanTransactionsController` created
+
+✔ Create Transaction API implemented
+
+✔ Get All Transactions API implemented
+
+✔ Get Transaction By ID API implemented
+
+✔ Get Transactions By Loan API implemented
+
+✔ Delete Transaction API implemented
+
+✔ Repayment validation implemented
+
+✔ Loan balance automatically updated when transactions are created
+
+✔ Loan balance automatically restored when transactions are deleted
+
+✔ Transaction type names added to API responses
+
+✔ Payment method names added to API responses
+
+✔ Transaction API tested successfully
+
+## Transaction Types
+
+The system currently supports:
+
+1. Disbursement
+2. Repayment
+3. Interest
+4. Penalty
+5. Adjustment
+6. Refund
+
+## Payment Methods
+
+The system currently supports:
+
+1. Cash
+2. Bank Transfer
+3. POS
+4. Mobile Money
+5. Cheque
+6. Wallet
+7. Other
+
+## API Endpoints
+
+### Create Transaction
+
+`POST /api/loan-transactions`
+
+Creates a new loan transaction and automatically updates the loan balance.
+
+### Get All Transactions
+
+`GET /api/loan-transactions`
+
+Returns all transactions.
+
+### Get Transaction
+
+`GET /api/loan-transactions/{id}`
+
+Returns a specific transaction.
+
+### Get Loan Transaction History
+
+`GET /api/loan-transactions/loan/{loanId}`
+
+Returns all transactions belonging to a particular loan.
+
+### Delete Transaction
+
+`DELETE /api/loan-transactions/{id}`
+
+Deletes a transaction and reverses its effect on the loan balance.
+
+## Validation Implemented
+
+The system prevents:
+
+* Zero or negative transaction amounts
+* Transactions against non-existent loans
+* Transactions against closed loans
+* Repayments greater than the current loan balance
+* Invalid transaction types
+
+## Testing Result
+
+A repayment transaction of ₦100,000 was successfully created against the Business Capital loan.
+
+Before repayment:
+
+* Principal: ₦500,000
+* Balance: ₦500,000
+
+After repayment:
+
+* Repayment: ₦100,000
+* Balance: ₦400,000
+
+After deleting the repayment transaction:
+
+* Balance returned to: ₦500,000
+
+This confirmed that transaction creation and transaction reversal are both functioning correctly.
+
+## Status
+
+**Completed successfully.**
+
+The Loan Transactions foundation is now operational and ready to support future repayment history, financial reporting, dashboards, and offline synchronization.
+
+
+# Sprint 19 — Loan Transactions
+
+## Objective
+
+Implement the transaction system required to record and manage financial activity against loans.
+
+## Completed
+
+### Domain
+
+* Created `LoanTransaction` entity.
+* Added `LoanTransactionType` enum.
+* Added `PaymentMethod` enum.
+* Established relationship between `Loan` and `LoanTransaction`.
+* Added `LoanTransactions` DbSet.
+* Added EF Core configuration.
+* Added database migration.
+
+### Transaction Types
+
+The system supports:
+
+1. Disbursement
+2. Repayment
+3. Interest
+4. Penalty
+5. Adjustment
+6. Refund
+
+### Payment Methods
+
+The system supports:
+
+1. Cash
+2. Bank Transfer
+3. POS
+4. Mobile Money
+5. Cheque
+6. Wallet
+7. Other
+
+### Infrastructure
+
+Implemented:
+
+* `ILoanTransactionRepository`
+* `LoanTransactionRepository`
+
+Repository operations include:
+
+* Create transaction
+* Get transaction by ID
+* Get all transactions
+* Get transactions by loan
+* Delete transaction
+* Save changes
+
+### Application Layer
+
+Implemented:
+
+* `CreateLoanTransactionRequest`
+* `LoanTransactionResponse`
+* `LoanTransactionService`
+
+The service provides:
+
+* Transaction creation
+* Disbursement processing
+* Repayment processing
+* Interest processing
+* Penalty processing
+* Adjustment processing
+* Refund processing
+* Transaction history retrieval
+* Transaction deletion
+* Automatic loan balance calculation
+
+### Business Rules
+
+The transaction service validates:
+
+* Transaction amount must be greater than zero.
+* Loan must exist.
+* Closed loans cannot receive new transactions.
+* Repayment cannot exceed the current loan balance.
+* Loan balance is automatically updated after a transaction.
+* Deleting a transaction reverses its effect on the loan balance.
+
+### API
+
+Implemented:
+
+`POST /api/loan-transactions`
+
+Create a transaction.
+
+`GET /api/loan-transactions`
+
+Get all transactions.
+
+`GET /api/loan-transactions/{id}`
+
+Get one transaction.
+
+`GET /api/loan-transactions/loan/{loanId}`
+
+Get transaction history for a specific loan.
+
+`DELETE /api/loan-transactions/{id}`
+
+Delete a transaction and reverse its financial effect.
+
+### API Response Improvements
+
+Transaction responses were changed from returning complete EF Core entities to dedicated response DTOs.
+
+This prevents:
+
+* Circular JSON references
+* Excessively large API responses
+* Unnecessary database relationship data being exposed
+
+The API now returns useful human-readable values such as:
+
+* `transactionTypeName`
+* `paymentMethodName`
+
+### Testing
+
+Successfully tested:
+
+* Transaction creation
+* Repayment transaction
+* Loan balance reduction
+* Repayment-over-balance validation
+* Get all transactions
+* Get transaction by ID
+* Get transactions by loan
+* Delete transaction
+* Loan balance restoration after transaction deletion
+
+### Example Test
+
+Original loan balance:
+
+`₦500,000`
+
+Repayment:
+
+`₦100,000`
+
+Resulting balance:
+
+`₦400,000`
+
+After deleting the repayment transaction:
+
+`₦500,000`
+
+### Build Verification
+
+The complete backend solution builds successfully:
+
+* LoanLedger.Domain
+* LoanLedger.Tests
+* LoanLedger.Application
+* LoanLedger.Infrastructure
+* LoanLedger.API
+
+## Status
+
+## Sprint 19 – Loan Transaction Accounting Enhancement: Adjustment & Waiver Support
+
+### Date
+
+August 2026
+
+### Objective
+
+Extend the LoanLedger transaction system to support more realistic loan accounting, particularly lender adjustments and forgiveness/waiver of outstanding loan amounts.
+
+### Work Completed
+
+The loan transaction system was enhanced with two additional concepts:
+
+#### 1. Adjustment Direction
+
+Adjustments can now explicitly indicate whether they:
+
+* **Increase** the outstanding loan balance
+* **Decrease** the outstanding loan balance
+
+Implemented through:
+
+`LoanLedger.Domain.Enums.AdjustmentDirection`
+
+```text
+Increase = 1
+Decrease = 2
+```
+
+The `AdjustmentDirection` property is nullable and is only required when the transaction type is `Adjustment`.
+
+#### 2. Waiver Type
+
+The transaction system was extended to support lender forgiveness of outstanding amounts.
+
+Implemented through:
+
+`LoanLedger.Domain.Enums.WaiverType`
+
+A waiver represents an amount that the lender has decided to forgive. The forgiven amount reduces the outstanding loan balance without being treated as a repayment.
+
+The system supports identifying what was waived, such as principal, interest, penalty, or other supported waiver categories.
+
+### Loan Transaction Entity
+
+`LoanTransaction` now contains:
+
+* `AdjustmentDirection`
+* `WaiverType`
+
+Both properties are nullable because they only apply to their respective transaction types.
+
+### Transaction Accounting Rules
+
+The centralized balance-effect logic now handles:
+
+| Transaction Type      | Balance Effect |
+| --------------------- | -------------: |
+| Disbursement          |       Increase |
+| Repayment             |       Decrease |
+| Interest              |       Increase |
+| Penalty               |       Increase |
+| Adjustment – Increase |       Increase |
+| Adjustment – Decrease |       Decrease |
+| Refund                |       Decrease |
+| Waiver                |       Decrease |
+
+The balance is prevented from becoming negative.
+
+When the resulting balance reaches zero, the loan is automatically marked as closed.
+
+### Update and Delete Support
+
+Transaction update and deletion logic was updated to use the same balance-effect rules.
+
+This ensures that:
+
+* Updating an adjustment correctly reverses the previous adjustment.
+* Updating a waiver correctly reverses the previous waiver before applying the new transaction.
+* Deleting a transaction reverses its original financial effect.
+* Loan status is recalculated after changes.
+* Closed loans can be reopened when a transaction change causes the balance to become greater than zero.
+
+### Database Migration
+
+A new Entity Framework Core migration was created:
+
+`AddAdjustmentAndWaiverSupport`
+
+The migration added the following nullable columns to `LoanTransactions`:
+
+* `AdjustmentDirection`
+* `WaiverType`
+
+The migration was successfully applied to the PostgreSQL database.
+
+### API Verification
+
+The implementation was tested through the API.
+
+Successful tests included:
+
+#### Principal Waiver
+
+```text
+Transaction Type: Waiver
+Waiver Type: Principal
+Amount: ₦20,000
+Effect: Balance decreased by ₦20,000
+```
+
+#### Adjustment Increase
+
+```text
+Transaction Type: Adjustment
+Direction: Increase
+Amount: ₦10,000
+Effect: Balance increased by ₦10,000
+```
+
+#### Adjustment Decrease
+
+```text
+Transaction Type: Adjustment
+Direction: Decrease
+Amount: ₦5,000
+Effect: Balance decreased by ₦5,000
+```
+
+The API correctly returned the transaction type names, adjustment direction, waiver type, amounts, references, dates, and descriptions.
+
+### Build Verification
+
+The complete backend solution was successfully built:
+
+```text
+LoanLedger.Domain       succeeded
+LoanLedger.Tests        succeeded
+LoanLedger.Application  succeeded
+LoanLedger.Infrastructure succeeded
+LoanLedger.API          succeeded
+```
+
+Result:
+
+```text
+Build succeeded.
+```
+
+### Outcome
+
+The LoanLedger backend now supports a more complete financial transaction model in which a lender can:
+
+* record repayments;
+* add interest;
+* add penalties;
+* make balance adjustments;
+* increase or decrease a balance through adjustments;
+* issue refunds;
+* forgive part or all of an outstanding amount through waivers;
+* identify the nature of a waiver;
+* maintain an accurate current loan balance.
+
+### Next Development Stage
+
+The next major stage is:
+
+**Reporting & PDF Export**
+
+This will support individual-loan reports, periodic reports, custom date-range reports, and complete user/account export.
+
+# Sprint 20 – Loan Summary & Financial Intelligence
+
+## Objectives
+
+- Create loan summary response
+- Calculate current loan balance
+- Calculate total repayments
+- Calculate total interest
+- Calculate total penalties
+- Count loan transactions
+- Track last payment date
+- Display loan contact and category
+- Display loan status
+- Create loan summary API endpoint
+- Test summary against real transaction data
+
+## Completed
+
+✔ LoanSummaryResponse created
+✔ Loan summary service implemented
+✔ Current balance calculation verified
+✔ Total repayment calculation verified
+✔ Total interest calculation verified
+✔ Total penalty calculation verified
+✔ Transaction count verified
+✔ Last payment date verified
+✔ Contact name included
+✔ Loan category included
+✔ Loan status included
+✔ Loan summary API endpoint tested
+✔ Repayment transaction tested
+✔ Interest transaction tested
+✔ Penalty transaction tested
+✔ Adjustment transaction tested
+✔ Refund transaction tested
+✔ Transaction deletion and balance reversal tested
+✔ Duplicate transaction reference validation tested
+
+## Verification Result
+
+Loan: Business Capital
+
+Principal Amount: ₦500,000
+Total Repaid: ₦250,000
+Total Interest: ₦25,000
+Total Penalty: ₦10,000
+Current Balance: ₦305,000
+Transaction Count: 7
+Status: Active
+
+All tested transaction operations produced the expected results.
+
+## Status
+
+Completed successfully.
+
+Loan Summary and Financial Intelligence are now operational and verified through API testing.
+
+# Sprint 21 – Workspace Architecture
+
+## Status
+
+Planned / Next Development Stage
+
+## Objective
+
+Introduce the Workspace layer into LoanLedger so that one user can manage different financial environments independently.
+
+## Final Workspace Types
+
+LoanLedger Version 1 supports four workspace types:
+
+1. Individual
+2. Business
+3. Cooperative
+4. Organization
+
+## Workspace Principle
+
+A workspace represents the financial environment in which records are managed.
+
+Workspace type must remain separate from loan type or agreement type.
+
+For example:
+
+An Individual workspace may contain:
+- Personal loans
+- Informal loans
+- Salary advances
+- Other financial agreements
+
+A Business workspace may contain:
+- Business credit
+- Customer credit
+- Business loans
+- Other financial agreements
+
+A Cooperative workspace may contain:
+- Member loans
+- Cooperative financial arrangements
+- Member repayments
+
+An Organization workspace may contain:
+- Staff financial arrangements
+- Organization loans
+- Other approved financial relationships
+
+## Architectural Direction
+
+The application will use the following ownership structure:
+
+User
+↓
+Workspace
+↓
+Contacts
+↓
+Loan Categories
+↓
+Loans
+↓
+Loan Transactions
+
+## Multiple Workspaces
+
+A single user may own multiple workspaces.
+
+Example:
+
+User
+├── Individual Workspace
+├── Business Workspace
+├── Cooperative Workspace
+└── Organization Workspace
+
+Each workspace maintains its own financial records.
+
+## Data Isolation
+
+Records belonging to one workspace must not automatically appear in another workspace.
+
+For example:
+
+A loan created inside a Business workspace must not appear in the user's Individual workspace unless the system explicitly supports a future transfer or sharing operation.
+
+## Current Backend Position
+
+The existing backend already supports:
+
+- Authentication
+- Users
+- Contacts
+- Loan Categories
+- Loans
+- Loan Transactions
+- Transaction accounting
+- Loan summaries
+
+The Workspace layer has not yet been implemented in the backend.
+
+## Next Implementation
+
+The next backend stage will implement:
+
+- Workspace entity
+- Workspace type enum
+- Workspace repository
+- Workspace service
+- Workspace API
+- Workspace membership/ownership rules
+- Workspace-aware data relationships
+- Workspace authorization
+
+## Status
+
+The existing financial engine remains valid.
+
+Workspace implementation will be added as an ownership and isolation layer above the existing financial modules.

@@ -4,7 +4,11 @@ namespace LoanLedger.Application.Interfaces;
 
 public interface IContactService
 {
-    Task<CreateContactResponse> CreateAsync(CreateContactRequest request);
+Task<CreateContactResponse> CreateAsync(
+Guid userId,
+CreateContactRequest request);
 
-    Task<List<ContactDto>> GetByUserAsync(Guid userId);
+Task<List<ContactDto>> GetByUserAsync(
+    Guid userId);
+
 }

@@ -17,4 +17,6 @@ public class LoanCategory
     public bool IsArchived { get; set; }
 
     public User User { get; set; } = null!;
+	public ICollection<Loan> Loans { get; set; }
+    = new List<Loan>();
 }

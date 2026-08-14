@@ -9,9 +9,18 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using LoanLedger.Application.Contacts;
 using LoanLedger.Application.Categories;
+using LoanLedger.Application.Loans;
+using System.Text.Json.Serialization;
+using LoanLedger.Application.LoanTransactions;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddControllers();
+
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler =
+            ReferenceHandler.IgnoreCycles;
+    });
 
 builder.Services.AddAuthentication(
     JwtBearerDefaults.AuthenticationScheme)
@@ -52,6 +61,12 @@ builder.Services.AddScoped<IContactRepository, ContactRepository>();
 builder.Services.AddScoped<IContactService, ContactService>();
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<ILoanRepository, LoanRepository>();
+builder.Services.AddScoped<ILoanService, LoanService>();
+builder.Services.AddScoped<ILoanTransactionRepository, LoanTransactionRepository>();
+builder.Services.AddScoped<LoanTransactionService>();
+builder.Services.AddScoped<ILoanTransactionService, LoanTransactionService>();
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 // Add services to the container.
 builder.Services.AddOpenApi();

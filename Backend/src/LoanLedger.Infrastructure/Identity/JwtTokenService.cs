@@ -9,41 +9,70 @@ namespace LoanLedger.Infrastructure.Identity;
 
 public class JwtTokenService : IJwtTokenService
 {
-    private readonly JwtSettings _settings;
+private readonly JwtSettings _settings;
 
-    public JwtTokenService(IConfiguration configuration)
+public JwtTokenService(
+    IConfiguration configuration)
+{
+    _settings = configuration
+        .GetSection("JwtSettings")
+        .Get<JwtSettings>()!;
+}
+
+public string GenerateToken(
+    Guid userId,
+    string email)
+{
+    var key =
+        new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes(
+                _settings.SecretKey));
+
+    var credentials =
+        new SigningCredentials(
+            key,
+            SecurityAlgorithms.HmacSha256);
+
+    var claims = new[]
     {
-        _settings = configuration
-            .GetSection("JwtSettings")
-            .Get<JwtSettings>()!;
-    }
+        // Standard JWT subject claim
+        new Claim(
+            JwtRegisteredClaimNames.Sub,
+            userId.ToString()),
 
-    public string GenerateToken(Guid userId, string email)
-    {
-        var key = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(_settings.SecretKey));
+        // ASP.NET Core authenticated user ID
+        new Claim(
+            ClaimTypes.NameIdentifier,
+            userId.ToString()),
 
-        var credentials =
-            new SigningCredentials(
-                key,
-                SecurityAlgorithms.HmacSha256);
+        // User email
+        new Claim(
+            JwtRegisteredClaimNames.Email,
+            email),
 
-        var claims = new[]
-        {
-            new Claim(JwtRegisteredClaimNames.Sub,userId.ToString()),
-            new Claim(JwtRegisteredClaimNames.Email,email),
-            new Claim(JwtRegisteredClaimNames.Jti,Guid.NewGuid().ToString())
-        };
+        // Unique token identifier
+        new Claim(
+            JwtRegisteredClaimNames.Jti,
+            Guid.NewGuid().ToString())
+    };
 
-        var token =
-            new JwtSecurityToken(
-                issuer: _settings.Issuer,
-                audience: _settings.Audience,
-                claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(_settings.ExpiryMinutes),
-                signingCredentials: credentials);
+    var token =
+        new JwtSecurityToken(
+            issuer: _settings.Issuer,
 
-        return new JwtSecurityTokenHandler()
-            .WriteToken(token);
-    }
+            audience: _settings.Audience,
+
+            claims: claims,
+
+            expires:
+                DateTime.UtcNow.AddMinutes(
+                    _settings.ExpiryMinutes),
+
+            signingCredentials:
+                credentials);
+
+    return new JwtSecurityTokenHandler()
+        .WriteToken(token);
+}
+
 }

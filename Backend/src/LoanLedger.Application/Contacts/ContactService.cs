@@ -5,68 +5,138 @@ namespace LoanLedger.Application.Contacts;
 
 public class ContactService : IContactService
 {
-    private readonly IContactRepository _repository;
+private readonly IContactRepository _repository;
 
-    public ContactService(IContactRepository repository)
+public ContactService(IContactRepository repository)
+{
+    _repository = repository;
+}
+
+// =========================================================
+// CREATE CONTACT
+// =========================================================
+
+public async Task<CreateContactResponse> CreateAsync(
+    Guid userId,
+    CreateContactRequest request)
+{
+    if (userId == Guid.Empty)
     {
-        _repository = repository;
+        throw new Exception(
+            "Invalid user identity.");
     }
 
-    public async Task<CreateContactResponse> CreateAsync(CreateContactRequest request)
+    if (string.IsNullOrWhiteSpace(request.FullName))
     {
-		var existingContact =
-			await _repository.GetByPhoneAsync(
-				request.UserId,
-				request.PhoneNumber);
+        throw new Exception(
+            "Contact full name is required.");
+    }
 
-		if (existingContact != null)
-		{
-			return new CreateContactResponse
-			{
-				Success = false,
-				Message = "Contact already exists."
-			};
-		}
-		
-        var contact = new Contact
-        {
-            Id = Guid.NewGuid(),
-            UserId = request.UserId,
-            FullName = request.FullName,
-            BusinessName = request.BusinessName,
-            PhoneNumber = request.PhoneNumber,
-            Email = request.Email,
-            Address = request.Address,
-            ContactType = request.ContactType,
-            IsFavorite = false,
-            IsArchived = false
-        };
+    if (string.IsNullOrWhiteSpace(request.PhoneNumber))
+    {
+        throw new Exception(
+            "Contact phone number is required.");
+    }
 
-        await _repository.AddAsync(contact);
+    var existingContact =
+        await _repository.GetByPhoneAsync(
+            userId,
+            request.PhoneNumber);
 
-        await _repository.SaveChangesAsync();
-
+    if (existingContact != null)
+    {
         return new CreateContactResponse
         {
-            Success = true,
-            Message = "Contact created successfully.",
-            ContactId = contact.Id
+            Success = false,
+            Message = "Contact already exists."
         };
     }
 
-    public async Task<List<ContactDto>> GetByUserAsync(Guid userId)
+    var contact = new Contact
     {
-        var contacts = await _repository.GetByUserIdAsync(userId);
+        Id = Guid.NewGuid(),
 
-        return contacts.Select(c => new ContactDto
+        // IMPORTANT:
+        // The owner comes from the authenticated user,
+        // not from the request body.
+        UserId = userId,
+
+        FullName = request.FullName,
+
+        BusinessName =
+            request.BusinessName,
+
+        PhoneNumber =
+            request.PhoneNumber,
+
+        Email =
+            request.Email,
+
+        Address =
+            request.Address,
+
+        ContactType =
+            request.ContactType,
+
+        IsFavorite = false,
+
+        IsArchived = false
+    };
+
+    await _repository.AddAsync(contact);
+
+    await _repository.SaveChangesAsync();
+
+    return new CreateContactResponse
+    {
+        Success = true,
+        Message =
+            "Contact created successfully.",
+        ContactId = contact.Id
+    };
+}
+
+// =========================================================
+// GET CURRENT USER'S CONTACTS
+// =========================================================
+
+public async Task<List<ContactDto>> GetByUserAsync(
+    Guid userId)
+{
+    if (userId == Guid.Empty)
+    {
+        throw new Exception(
+            "Invalid user identity.");
+    }
+
+    var contacts =
+        await _repository.GetByUserIdAsync(
+            userId);
+
+    return contacts
+        .Select(c => new ContactDto
         {
             Id = c.Id,
-            FullName = c.FullName,
-            BusinessName = c.BusinessName,
-            PhoneNumber = c.PhoneNumber,
-            Email = c.Email,
-            ContactType = c.ContactType,
-            IsFavorite = c.IsFavorite
-        }).ToList();
-    }
+
+            FullName =
+                c.FullName,
+
+            BusinessName =
+                c.BusinessName,
+
+            PhoneNumber =
+                c.PhoneNumber,
+
+            Email =
+                c.Email,
+
+            ContactType =
+                c.ContactType,
+
+            IsFavorite =
+                c.IsFavorite
+        })
+        .ToList();
+}
+
 }

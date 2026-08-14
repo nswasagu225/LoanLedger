@@ -3,6 +3,7 @@ using System;
 using LoanLedger.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace LoanLedger.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(LoanLedgerDbContext))]
-    partial class LoanLedgerDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260807154810_AddLoans")]
+    partial class AddLoans
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -180,51 +183,6 @@ namespace LoanLedger.Infrastructure.Persistence.Migrations
                     b.ToTable("LoanCategories");
                 });
 
-            modelBuilder.Entity("LoanLedger.Domain.Entities.LoanTransaction", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<int?>("AdjustmentDirection")
-                        .HasColumnType("integer");
-
-                    b.Property<decimal>("Amount")
-                        .HasColumnType("numeric");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("LoanId")
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("PaymentMethod")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("ReferenceNumber")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("TransactionDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("TransactionType")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("WaiverType")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("LoanId");
-
-                    b.ToTable("LoanTransactions");
-                });
-
             modelBuilder.Entity("LoanLedger.Domain.Entities.User", b =>
                 {
                     b.Property<Guid>("Id")
@@ -325,25 +283,9 @@ namespace LoanLedger.Infrastructure.Persistence.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("LoanLedger.Domain.Entities.LoanTransaction", b =>
-                {
-                    b.HasOne("LoanLedger.Domain.Entities.Loan", "Loan")
-                        .WithMany("Transactions")
-                        .HasForeignKey("LoanId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Loan");
-                });
-
             modelBuilder.Entity("LoanLedger.Domain.Entities.Contact", b =>
                 {
                     b.Navigation("Loans");
-                });
-
-            modelBuilder.Entity("LoanLedger.Domain.Entities.Loan", b =>
-                {
-                    b.Navigation("Transactions");
                 });
 
             modelBuilder.Entity("LoanLedger.Domain.Entities.LoanCategory", b =>

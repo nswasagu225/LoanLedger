@@ -42,4 +42,10 @@ public class UserRepository : IUserRepository
 				x.Email == value ||
 				x.PhoneNumber == value);
 	}
+	public async Task<User?> GetByIdAsync(Guid id)
+	{
+	return await _context.Users
+	.FirstOrDefaultAsync(x => x.Id == id);
+	}
+
 }

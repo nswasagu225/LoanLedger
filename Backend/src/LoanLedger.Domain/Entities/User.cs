@@ -25,4 +25,6 @@ public class User : AuditableEntity
     = new List<Contact>();
 	public ICollection<LoanCategory> LoanCategories { get; set; }
     = new List<LoanCategory>();
+	public ICollection<Loan> Loans { get; set; }
+    = new List<Loan>();
 }
