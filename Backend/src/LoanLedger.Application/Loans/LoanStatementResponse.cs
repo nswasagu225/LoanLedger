@@ -1,8 +1,13 @@
 namespace LoanLedger.Application.Loans;
+using LoanLedger.Domain.Enums;
 
 public class LoanStatementResponse
 {
     public Guid LoanId { get; set; }
+
+	public int Direction { get; set; }
+
+	public string DirectionName { get; set; } = string.Empty;
 
     public string Title { get; set; } = string.Empty;
 

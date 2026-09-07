@@ -318,3 +318,84 @@ Business
 Agreement:
 Business Credit
 
+# Learning Notes — Current Backend Development Update
+**As of:** 18 August 2026
+
+# Witness ↔ Loan Association
+
+The Witness relationship is implemented through a junction entity:
+
+```text
+Loan
+  ↓
+LoanWitness
+  ↓
+Witness
+```
+
+A loan may have a maximum of three witnesses.
+
+Witnesses are ordered:
+
+```text
+1 → Witness 1
+2 → Witness 2
+3 → Witness 3
+```
+
+The backend automatically chooses the first available order when no order is supplied.
+
+The service prevents:
+
+- Witnesses belonging to another user from being attached.
+- Duplicate witness relationships.
+- More than three witnesses.
+- Reuse of an occupied witness order.
+
+These rules were tested successfully.
+
+# Current Learning Stage — Attachments
+
+The next learning objective is to understand how LoanLedger should represent and store attachments.
+
+The first stage is metadata and relationship design, not Flutter UI.
+
+Potential attachment concerns include:
+
+- Original file name
+- Stored file name/path
+- MIME/content type
+- File extension
+- File size
+- Attachment category/type
+- Upload timestamps
+- Loan relationship
+- Storage abstraction
+
+The final fields must be based on the existing LoanLedger architecture rather than invented without inspection.
+
+# Workspace Reminder
+
+Workspace type and Loan/Agreement type remain separate.
+
+Workspace:
+
+```text
+Individual
+Business
+Cooperative
+Organization
+```
+
+Agreement/Loan Type:
+
+```text
+Personal Loan
+Friend Loan
+Business Loan
+Cooperative Loan
+Organization Loan
+...
+```
+
+A workspace describes the environment; an agreement describes the financial relationship.

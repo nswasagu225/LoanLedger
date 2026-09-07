@@ -1,4 +1,4 @@
-# LoanLedger Progress
+﻿# LoanLedger Progress
 
 ## Overall Project Status
 
@@ -202,3 +202,71 @@ Reporting:
 ░░░░░░░░░░░░░░░░░░░░░░░░
 
 Not yet implemented
+
+# Project Progress — Current Update
+**As of:** 18 August 2026
+
+## Completed Recent Modules
+
+### Witness Management
+
+✅ Witness creation and retrieval  
+✅ Loan ↔ Witness association  
+✅ Maximum 3 witnesses per loan  
+✅ Witness ordering 1–3  
+✅ Duplicate relationship protection  
+✅ Explicit order conflict protection  
+✅ Automatic order assignment  
+✅ Witness retrieval by loan  
+✅ Witness removal  
+
+### Current Backend Stage
+
+## Attachment Foundation
+
+🔧 In Progress
+
+The current build has one Infrastructure error:
+
+```text
+LoanLedgerDbContext.cs(399,22)
+'Loan' does not contain a definition for 'Attachments'
+```
+
+No Attachment implementation files currently exist in Domain, Application, Infrastructure or API according to the latest project inspection.
+
+## Immediate Development Order
+
+1. Fix/inspect the current `Loan.Attachments` DbContext reference.
+2. Implement Attachment foundation.
+3. Test PDF/image/audio/voice metadata and storage.
+4. Implement Workspace architecture and entitlement/authorization rules.
+5. Continue Loan Description/details workflow.
+6. Continue reporting/export and later roadmap stages.
+
+## Important
+
+The old documentation stating "Workspace is Next" is now historical. Workspace is still planned, but Attachment must be completed first.
+
+## 7 September 2026 — Flutter Android Foundation Milestone
+
+### Completed
+- Flutter 3.47.2 and Dart 3.13.2 verified.
+- Android SDK 35.0.0 verified.
+- Android Build Tools 36 installed and verified.
+- Android NDK 28.2.13676358 installed successfully.
+- JDK 17 verified.
+- Gradle 9.3.1 verified.
+- Android Gradle Plugin 9.1.0 configured.
+- Flutter dependencies restored successfully.
+- Physical Infinix PR652B Android 11/API 30 device connected successfully.
+- Flutter debug APK built successfully.
+- Flutter debug APK installed successfully on the physical device.
+- Flutter Demo Home Page launched successfully.
+- Backend `dotnet build` succeeded.
+- Backend `dotnet test` succeeded: 1 passed, 0 failed.
+
+### Current Development Position
+The technical foundation for both the ASP.NET Core backend and Flutter Android client is now operational.
+
+The next development stage is the implementation of the actual LoanLedger Flutter application, beginning with the application shell, branding, navigation, authentication foundation, and API architecture.

@@ -4,16 +4,15 @@ namespace LoanLedger.Application.Interfaces;
 
 public interface IUserRepository
 {
-Task<User?> GetByIdAsync(Guid id);
+    Task<User?> GetByIdAsync(Guid id);
 
-Task<User?> GetByEmailAsync(string email);
+    Task<User?> GetByEmailAsync(string email);
 
-Task<User?> GetByPhoneAsync(string phoneNumber);
+    Task<User?> GetByPhoneAsync(string phoneNumber);
 
-Task<User?> GetByEmailOrPhoneAsync(string value);
+    Task<User?> GetByEmailOrPhoneAsync(string value);
 
-Task AddAsync(User user);
+    Task AddAsync(User user);
 
-Task SaveChangesAsync();
-
+    Task SaveChangesAsync();
 }

@@ -37,5 +37,7 @@ public class Contact : AuditableEntity
 
     public User User { get; set; } = null!;
 	public ICollection<Loan> Loans { get; set; }
-    = new List<Loan>();
+		= new List<Loan>();
+	public ICollection<ContactTrust> TrustProfiles { get; set; }
+		= new List<ContactTrust>();
 }

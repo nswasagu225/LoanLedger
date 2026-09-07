@@ -10,11 +10,14 @@ public interface ILoanTransactionRepository
 
     Task<List<LoanTransaction>> GetAllAsync();
 
+    Task<List<LoanTransaction>> GetByUserIdAsync(Guid userId);
+
     Task AddAsync(LoanTransaction transaction);
-	
-	Task<bool> ReferenceExistsAsync(string referenceNumber);
+
+    Task<bool> ReferenceExistsAsync(string referenceNumber);
 
     void Delete(LoanTransaction transaction);
 
     Task SaveChangesAsync();
 }
+

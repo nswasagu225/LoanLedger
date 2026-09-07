@@ -34,4 +34,11 @@ public interface ILoanService
 	Task<bool> CloseAsync(
 		Guid userId,
 		Guid loanId);
+	Task<bool> UpdateItemsAsync(
+		Guid userId,
+		Guid loanId,
+		UpdateLoanItemsRequest request);
+	Task<List<LoanResponse>> GetByWorkspaceAsync(
+		Guid userId,
+		Guid workspaceId);
 }

@@ -134,6 +134,54 @@ public async Task<IActionResult> GetMyLoans()
     return Ok(loans);
 }
 
+[HttpGet("workspace/{workspaceId:guid}")]
+public async Task<IActionResult> GetByWorkspace(
+    Guid workspaceId)
+{
+    var userId = GetCurrentUserId();
+
+    if (userId == null)
+    {
+        return Unauthorized(new
+        {
+            success = false,
+            message = "Invalid or missing user identity."
+        });
+    }
+
+    try
+    {
+        var loans =
+            await _service.GetByWorkspaceAsync(
+                userId.Value,
+                workspaceId);
+
+        return Ok(new
+        {
+            success = true,
+            data = loans
+        });
+    }
+    catch (UnauthorizedAccessException ex)
+    {
+        return StatusCode(
+            StatusCodes.Status403Forbidden,
+            new
+            {
+                success = false,
+                message = ex.Message
+            });
+    }
+    catch (Exception ex)
+    {
+        return BadRequest(new
+        {
+            success = false,
+            message = ex.Message
+        });
+    }
+}
+
 // ---------------------------------------------------------
 // GET LOAN SUMMARY
 // GET: api/loans/{loanId}/summary
@@ -352,6 +400,54 @@ public async Task<IActionResult> Close(
         {
             success = true,
             message = "Loan closed successfully."
+        });
+    }
+    catch (Exception ex)
+    {
+        return BadRequest(new
+        {
+            success = false,
+            message = ex.Message
+        });
+    }
+}
+[HttpPut("{loanId:guid}/items")]
+public async Task<IActionResult> UpdateItems(
+    Guid loanId,
+    UpdateLoanItemsRequest request)
+{
+    var userId = GetCurrentUserId();
+
+    if (userId == null)
+    {
+        return Unauthorized(new
+        {
+            success = false,
+            message = "Invalid or missing user identity."
+        });
+    }
+
+    try
+    {
+        var updated =
+            await _service.UpdateItemsAsync(
+                userId.Value,
+                loanId,
+                request);
+
+        if (!updated)
+        {
+            return NotFound(new
+            {
+                success = false,
+                message = "Loan not found."
+            });
+        }
+
+        return Ok(new
+        {
+            success = true,
+            message = "Loan items updated successfully."
         });
     }
     catch (Exception ex)

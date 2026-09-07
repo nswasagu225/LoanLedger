@@ -21,7 +21,8 @@ public class LoanTransactionRepository : ILoanTransactionRepository
             .FirstOrDefaultAsync(t => t.Id == id);
     }
 
-    public async Task<List<LoanTransaction>> GetByLoanIdAsync(Guid loanId)
+    public async Task<List<LoanTransaction>> GetByLoanIdAsync(
+        Guid loanId)
     {
         return await _context.LoanTransactions
             .Where(t => t.LoanId == loanId)
@@ -36,18 +37,32 @@ public class LoanTransactionRepository : ILoanTransactionRepository
             .ToListAsync();
     }
 
-    public async Task AddAsync(LoanTransaction transaction)
+    public async Task<List<LoanTransaction>> GetByUserIdAsync(
+        Guid userId)
+    {
+        return await _context.LoanTransactions
+            .Include(t => t.Loan)
+            .Where(t => t.Loan.UserId == userId)
+            .OrderByDescending(t => t.TransactionDate)
+            .ToListAsync();
+    }
+
+    public async Task AddAsync(
+        LoanTransaction transaction)
     {
         await _context.LoanTransactions.AddAsync(transaction);
     }
-	
-	public async Task<bool> ReferenceExistsAsync(string referenceNumber)
-	{
-		return await _context.LoanTransactions
-			.AnyAsync(t => t.ReferenceNumber == referenceNumber);
-	}
 
-    public void Delete(LoanTransaction transaction)
+    public async Task<bool> ReferenceExistsAsync(
+        string referenceNumber)
+    {
+        return await _context.LoanTransactions
+            .AnyAsync(t =>
+                t.ReferenceNumber == referenceNumber);
+    }
+
+    public void Delete(
+        LoanTransaction transaction)
     {
         _context.LoanTransactions.Remove(transaction);
     }

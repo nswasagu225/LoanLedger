@@ -17,4 +17,6 @@ public class ContactDto
     public ContactType ContactType { get; set; }
 
     public bool IsFavorite { get; set; }
+
+    public string? ProfilePhoto { get; set; }
 }

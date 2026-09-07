@@ -1,4 +1,4 @@
-# LoanLedger Development Journal
+﻿# LoanLedger Development Journal
 
 ## Project Information
 
@@ -1305,3 +1305,165 @@ The next backend stage will implement:
 The existing financial engine remains valid.
 
 Workspace implementation will be added as an ownership and isolation layer above the existing financial modules.
+
+
+# Development Journal — Current Status Update
+**Update date:** 18 August 2026
+
+> Append this section after the historical Sprint 21 material. Do not delete the historical record.
+
+# Sprint 22 – Witness Association and Multiple Witness Testing
+
+## Status
+
+Completed
+
+## Objective
+
+Complete the Witness ↔ Loan relationship API and verify the maximum three-witness rule.
+
+## Completed
+
+- LoanWitness entity confirmed.
+- LoanWitness repository confirmed.
+- LoanWitness service confirmed.
+- LoanWitness controller confirmed.
+- User ownership validation confirmed.
+- Duplicate witness protection confirmed.
+- Maximum of 3 witnesses per loan confirmed.
+- Automatic witness order assignment confirmed.
+- Explicit witness order validation confirmed.
+- Witness order uniqueness confirmed.
+- Witness retrieval by loan confirmed.
+- Witness removal confirmed.
+
+## Test Result
+
+A test loan was successfully associated with:
+
+1. Aisha Bello — order 1
+2. Muhammad Usman — order 2
+3. Fatima Abdullahi — order 3
+
+Attempting to attach a duplicate witness correctly returned:
+
+`This witness is already attached to the loan.`
+
+Attempting to reuse an occupied witness order correctly returned:
+
+`Witness order 1 is already in use.`
+
+Removal also returned:
+
+`Witness removed from loan successfully.`
+
+## Conclusion
+
+The Witness ↔ Loan lifecycle is operational.
+
+# Sprint 23 – Attachment Foundation
+
+## Status
+
+Current / In Progress
+
+## Immediate Problem
+
+The current build fails in:
+
+`LoanLedgerDbContext.cs(399,22)`
+
+with:
+
+`'Loan' does not contain a definition for 'Attachments'`
+
+Current repository inspection shows that Attachment entity/application/infrastructure/API files do not yet exist.
+
+## Next Objective
+
+Inspect the existing DbContext Attachment configuration, determine whether it is a partial/accidental configuration, then implement the Attachment foundation consistently across Domain, Application, Infrastructure and API.
+
+## Target Attachment Lifecycle
+
+- Attachment metadata
+- Loan relationship
+- Repository
+- Service
+- API
+- Database migration
+- Storage abstraction
+- PDF/image/audio/voice metadata tests
+- Storage tests
+
+## Rule
+
+Do not proceed to Workspace until Attachment foundation and its initial lifecycle tests are stable.
+
+## 7 September 2026 — Flutter Android Foundation Successfully Completed
+
+### Android Development Environment
+The Flutter Android development foundation was successfully configured and verified.
+
+Confirmed environment:
+- Flutter 3.47.2
+- Dart 3.13.2
+- Android SDK 35.0.0
+- Android Build Tools 36
+- Android NDK 28.2.13676358
+- OpenJDK 17.0.20.1
+- Gradle 9.3.1
+- Android Gradle Plugin 9.1.0
+- Physical Android device: Infinix PR652B
+- Android version: Android 11 / API 30
+
+### Gradle and Network Verification
+Earlier Gradle dependency-download problems were resolved after moving to a stable Wi-Fi connection.
+
+Verified:
+- Maven Central connectivity
+- Google Maven connectivity
+- Gradle 9.3.1 execution
+- `gradlew help --stacktrace` completed successfully
+- Required Android NDK was installed successfully
+
+### Flutter Project Verification
+The Flutter project was cleaned and dependencies were successfully restored.
+
+Commands verified:
+- `flutter clean`
+- `flutter pub get`
+- `flutter devices`
+
+The physical Infinix PR652B device was detected and authorized through ADB.
+
+### First Successful Android Build
+The Flutter application was successfully built and installed on the physical Android device.
+
+Verified:
+- `flutter run`
+- Debug APK generated successfully
+- APK installed successfully
+- Flutter application launched on the physical device
+- Flutter Demo Home Page displayed correctly
+- Dart VM Service connected successfully
+
+This confirms that the Android/Flutter development foundation is operational.
+
+### Backend Verification Before Flutter Transition
+The backend was re-verified before beginning the Flutter application phase.
+
+Results:
+- `dotnet build` — successful
+- Domain project — successful
+- Application project — successful
+- Infrastructure project — successful
+- API project — successful
+- Tests project — successful
+- `dotnet test` — 1 test passed, 0 failed
+
+### Milestone Status
+The project has now transitioned from backend foundation and Android environment setup into the actual Flutter application development phase.
+
+Next major phase:
+- Replace the Flutter demo application with the LoanLedger application shell.
+- Establish LoanLedger branding, navigation, theme, authentication foundation, and API integration architecture.

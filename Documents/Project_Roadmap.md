@@ -282,3 +282,93 @@ Transactions
 - Performance testing
 - Deployment
 - Version 1.0 release
+
+# Roadmap — Current Status Update
+**As of:** 18 August 2026
+
+## Immediate Milestone — Attachment Foundation
+
+🔧 Current
+
+### Objectives
+
+- Resolve existing Attachment-related DbContext configuration.
+- Create Attachment domain entity.
+- Create Loan ↔ Attachment relationship.
+- Create repository.
+- Create service.
+- Create API.
+- Create EF Core configuration/migration.
+- Establish storage abstraction.
+- Test metadata and storage handling.
+
+### Test Types
+
+- PDF
+- Image
+- Audio
+- Voice recording
+
+---
+
+# Next Milestone — Workspace Management
+
+⏳ After Attachment
+
+Workspace types:
+
+- Individual
+- Business
+- Cooperative
+- Organization
+
+Objectives:
+
+- Workspace entity
+- Workspace type enum
+- Ownership
+- Repository
+- Service
+- Controller
+- Creation/retrieval/update
+- Activation/deactivation
+- Authorization
+- Entitlement rules
+- Workspace-aware data relationships
+- Data isolation
+
+---
+
+# Then
+
+## Loan Description / Details
+
+⏳ Planned
+
+## Reporting & Financial Export
+
+⏳ Planned
+
+## Offline Synchronization
+
+⏳ Planned
+
+## Smart Agreements
+
+⏳ Planned
+
+## Flutter Mobile Application
+
+⏳ Planned
+
+## Dashboard & Financial Intelligence
+
+⏳ Planned
+
+## Notifications
+
+⏳ Planned
+
+## Version 1.0
+
+⏳ Planned

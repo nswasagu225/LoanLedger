@@ -10,9 +10,19 @@ public class UnitOfWork : IUnitOfWork
 
     private IDbContextTransaction? _transaction;
 
-    public UnitOfWork(LoanLedgerDbContext context)
+    public IUserRepository Users { get; }
+
+    public IWorkspaceRepository Workspaces { get; }
+
+    public UnitOfWork(
+        LoanLedgerDbContext context,
+        IUserRepository userRepository,
+        IWorkspaceRepository workspaceRepository)
     {
         _context = context;
+
+        Users = userRepository;
+        Workspaces = workspaceRepository;
     }
 
     // =========================================================

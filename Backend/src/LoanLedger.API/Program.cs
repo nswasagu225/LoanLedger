@@ -12,6 +12,16 @@ using LoanLedger.Application.Categories;
 using LoanLedger.Application.Loans;
 using System.Text.Json.Serialization;
 using LoanLedger.Application.LoanTransactions;
+using LoanLedger.Application.Workspaces;
+using LoanLedger.Application.Items;
+using LoanLedger.Application.Guarantors;
+using LoanLedger.Application.Witnesses;
+using LoanLedger.Application.LoanWitnesses;
+using LoanLedger.Application.Collaterals;
+using LoanLedger.Application.Attachments;
+using LoanLedger.Infrastructure.Storage;
+using LoanLedger.Application.Profile;
+using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,6 +30,29 @@ builder.Services.AddControllers()
     {
         options.JsonSerializerOptions.ReferenceHandler =
             ReferenceHandler.IgnoreCycles;
+    })
+    .ConfigureApiBehaviorOptions(options =>
+    {
+        options.InvalidModelStateResponseFactory = context =>
+        {
+            var errors = context.ModelState
+                .Where(x => x.Value?.Errors.Count > 0)
+                .ToDictionary(
+                    x => char.ToLowerInvariant(x.Key[0]) + x.Key[1..],
+                    x => x.Value!.Errors
+                        .Select(e =>
+                            string.IsNullOrWhiteSpace(e.ErrorMessage)
+                                ? "Invalid value."
+                                : e.ErrorMessage)
+                        .ToArray());
+
+            return new BadRequestObjectResult(new
+            {
+                success = false,
+                message = "One or more validation errors occurred.",
+                errors
+            });
+        };
     });
 
 builder.Services.AddAuthentication(
@@ -57,16 +90,47 @@ builder.Services.AddScoped<IPasswordService, PasswordService>();
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+
 builder.Services.AddScoped<IContactRepository, ContactRepository>();
 builder.Services.AddScoped<IContactService, ContactService>();
+
+builder.Services.AddScoped<IContactTrustRepository, ContactTrustRepository>();
+builder.Services.AddScoped<IContactTrustService, ContactTrustService>();
+
+builder.Services.AddScoped<IGuarantorRepository, GuarantorRepository>();
+builder.Services.AddScoped<IGuarantorService, GuarantorService>();
+
+builder.Services.AddScoped<IWitnessRepository, WitnessRepository>();
+builder.Services.AddScoped<IWitnessService, WitnessService>();
+
+builder.Services.AddScoped<ILoanWitnessRepository, LoanWitnessRepository>();
+builder.Services.AddScoped<ILoanWitnessService, LoanWitnessService>();
+
+builder.Services.AddScoped<IItemRepository, ItemRepository>();
+builder.Services.AddScoped<IItemService, ItemService>();
+
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
+
 builder.Services.AddScoped<ILoanRepository, LoanRepository>();
 builder.Services.AddScoped<ILoanService, LoanService>();
+
+builder.Services.AddScoped<ICollateralRepository, CollateralRepository>();
+builder.Services.AddScoped<ICollateralService, CollateralService>();
+
+builder.Services.AddScoped<IAttachmentRepository, AttachmentRepository>();
+builder.Services.AddScoped<IAttachmentService, AttachmentService>();
+
+builder.Services.AddScoped<IFileStorageService, LocalFileStorageService>();
+builder.Services.AddScoped<IProfileService, ProfileService>();
+
 builder.Services.AddScoped<ILoanTransactionRepository, LoanTransactionRepository>();
 builder.Services.AddScoped<LoanTransactionService>();
 builder.Services.AddScoped<ILoanTransactionService, LoanTransactionService>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<IWorkspaceRepository, WorkspaceRepository>();
+builder.Services.AddScoped<IWorkspaceService, WorkspaceService>();
+
 
 // Add services to the container.
 builder.Services.AddOpenApi();

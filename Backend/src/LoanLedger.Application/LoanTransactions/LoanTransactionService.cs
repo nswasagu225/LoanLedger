@@ -1,6 +1,7 @@
 using LoanLedger.Application.Interfaces;
 using LoanLedger.Domain.Entities;
 using LoanLedger.Domain.Enums;
+using LoanLedger.Domain.Services;
 
 namespace LoanLedger.Application.LoanTransactions;
 
@@ -8,15 +9,18 @@ public class LoanTransactionService : ILoanTransactionService
 {
 private readonly ILoanTransactionRepository _transactionRepository;
 private readonly ILoanRepository _loanRepository;
+private readonly IContactTrustService _contactTrustService;
 private readonly IUnitOfWork _unitOfWork;
 
 public LoanTransactionService(
     ILoanTransactionRepository transactionRepository,
     ILoanRepository loanRepository,
+    IContactTrustService contactTrustService,
     IUnitOfWork unitOfWork)
 {
     _transactionRepository = transactionRepository;
     _loanRepository = loanRepository;
+    _contactTrustService = contactTrustService;
     _unitOfWork = unitOfWork;
 }
 
@@ -172,7 +176,7 @@ public async Task<Guid> CreateAsync(
     // =========================================================
 
     var balanceEffect =
-        GetBalanceEffect(
+		LoanBalanceCalculator.GetBalanceEffect(
             request.TransactionType,
             request.Amount,
             request.AdjustmentDirection,
@@ -182,15 +186,28 @@ public async Task<Guid> CreateAsync(
         loan.CurrentBalance + balanceEffect;
 
     // =========================================================
-    // PREVENT NEGATIVE BALANCE
-    // =========================================================
+	// PREVENT REPAYMENT OVERPAYMENT
+	// =========================================================
 
-    if (newBalance < 0)
-    {
-        throw new Exception(
-            $"Transaction would make the loan balance negative. " +
-            $"Current balance is {loan.CurrentBalance:N2}.");
-    }
+	if (request.TransactionType ==
+		LoanTransactionType.Repayment &&
+		request.Amount > loan.CurrentBalance)
+	{
+		throw new Exception(
+			$"Repayment amount cannot exceed the outstanding balance of " +
+			$"{loan.CurrentBalance:N2}.");
+	}
+
+	// =========================================================
+	// PREVENT NEGATIVE BALANCE
+	// =========================================================
+
+	if (newBalance < 0)
+	{
+		throw new Exception(
+			$"Transaction would make the loan balance negative. " +
+			$"Current balance is {loan.CurrentBalance:N2}.");
+	}
 
     // =========================================================
     // UPDATE LOAN BALANCE
@@ -208,11 +225,6 @@ public async Task<Guid> CreateAsync(
         loan.IsClosed = true;
         loan.ClosedAt = DateTime.UtcNow;
     }
-    else
-    {
-        loan.IsClosed = false;
-        loan.ClosedAt = null;
-    }
 
     // =========================================================
     // SAVE TRANSACTION
@@ -221,6 +233,10 @@ public async Task<Guid> CreateAsync(
     await _transactionRepository.AddAsync(transaction);
 
 		await _unitOfWork.SaveChangesAsync();
+
+		await _contactTrustService.RefreshForLoanAsync(
+			userId,
+			loan.Id);
 
 		await _unitOfWork.CommitTransactionAsync();
 
@@ -243,25 +259,10 @@ public async Task<List<LoanTransactionResponse>> GetAllAsync(
     Guid userId)
 {
     var transactions =
-        await _transactionRepository.GetAllAsync();
+        await _transactionRepository
+            .GetByUserIdAsync(userId);
 
-    var userTransactions =
-        new List<LoanTransaction>();
-
-    foreach (var transaction in transactions)
-    {
-        var loan =
-            await _loanRepository.GetByIdAsync(
-                transaction.LoanId);
-
-        if (loan != null &&
-            loan.UserId == userId)
-        {
-            userTransactions.Add(transaction);
-        }
-    }
-
-    return userTransactions
+    return transactions
         .Select(MapToResponse)
         .ToList();
 }
@@ -332,70 +333,109 @@ public async Task DeleteTransactionAsync(
     Guid userId,
     Guid transactionId)
 {
-    var transaction =
-        await _transactionRepository
-            .GetByIdAsync(transactionId);
+    await _unitOfWork.BeginTransactionAsync();
 
-    if (transaction == null)
-        throw new Exception(
-            "Transaction not found.");
-
-    var loan =
-        await _loanRepository
-            .GetByIdAsync(transaction.LoanId);
-
-    if (loan == null)
-        throw new Exception(
-            "Loan not found.");
-
-    // SECURITY
-    if (loan.UserId != userId)
-        throw new UnauthorizedAccessException(
-            "You do not have access to this transaction.");
-
-	// =========================================================
-	// CLOSED LOAN
-	// =========================================================
-
-	if (loan.IsClosed)
-		throw new Exception(
-			"This loan is already closed.");
-			
-    var balanceEffect =
-		GetBalanceEffect(
-			transaction.TransactionType,
-			transaction.Amount,
-			transaction.AdjustmentDirection,
-			transaction.WaiverType);
-
-    loan.CurrentBalance -=
-        balanceEffect;
-
-    if (loan.CurrentBalance < 0)
+    try
     {
-        throw new Exception(
-            "Deleting this transaction would result in a negative loan balance.");
-    }
+        var transaction =
+            await _transactionRepository
+                .GetByIdAsync(transactionId);
 
-    if (loan.CurrentBalance == 0)
+        if (transaction == null)
+            throw new Exception(
+                "Transaction not found.");
+
+        var loan =
+            await _loanRepository
+                .GetByIdAsync(transaction.LoanId);
+
+        if (loan == null)
+            throw new Exception(
+                "Loan not found.");
+
+        // =========================================================
+        // SECURITY
+        // =========================================================
+
+        if (loan.UserId != userId)
+            throw new UnauthorizedAccessException(
+                "You do not have access to this transaction.");
+		
+		// =========================================================
+		// CLOSED LOAN PROTECTION
+		// =========================================================
+
+		if (loan.IsClosed)
+		{
+			throw new Exception(
+				"This loan is closed. Reopen the loan before editing its transactions.");
+		}
+
+        // =========================================================
+        // REVERSE TRANSACTION EFFECT
+        // =========================================================
+
+        var balanceEffect =
+            LoanBalanceCalculator.GetBalanceEffect(
+                transaction.TransactionType,
+                transaction.Amount,
+                transaction.AdjustmentDirection,
+                transaction.WaiverType);
+
+        loan.CurrentBalance -= balanceEffect;
+
+        // =========================================================
+        // PREVENT NEGATIVE BALANCE
+        // =========================================================
+
+        if (loan.CurrentBalance < 0)
+        {
+            throw new Exception(
+                "Deleting this transaction would result in a negative loan balance.");
+        }
+
+        // =========================================================
+        // RECALCULATE LOAN STATUS
+        // =========================================================
+
+        if (loan.CurrentBalance == 0)
+		{
+			loan.IsClosed = true;
+			loan.ClosedAt = DateTime.UtcNow;
+		}
+	
+        // =========================================================
+        // DELETE TRANSACTION
+        // =========================================================
+
+        _transactionRepository.Delete(transaction);
+
+        // =========================================================
+        // SAVE EVERYTHING AS ONE UNIT
+        // =========================================================
+
+        await _unitOfWork.SaveChangesAsync();
+
+        // =========================================================
+        // REFRESH CONTACT TRUST
+        // =========================================================
+
+        await _contactTrustService.RefreshForLoanAsync(
+            userId,
+            loan.Id);
+
+        // =========================================================
+        // COMMIT
+        // =========================================================
+
+        await _unitOfWork.CommitTransactionAsync();
+    }
+    catch
     {
-        loan.IsClosed = true;
-        loan.ClosedAt = DateTime.UtcNow;
+        await _unitOfWork.RollbackTransactionAsync();
+
+        throw;
     }
-    else
-    {
-        loan.IsClosed = false;
-        loan.ClosedAt = null;
-    }
-
-    _transactionRepository.Delete(
-        transaction);
-
-    await _transactionRepository
-        .SaveChangesAsync();
-
-    await _loanRepository
-        .SaveChangesAsync();
 }
 
 // =========================================================
@@ -411,188 +451,245 @@ public async Task<bool> UpdateAsync(
         throw new Exception(
             "Transaction amount must be greater than zero.");
 
-    var transaction =
-        await _transactionRepository
-            .GetByIdAsync(transactionId);
+    await _unitOfWork.BeginTransactionAsync();
 
-    if (transaction == null)
-        return false;
-
-    var loan =
-        await _loanRepository
-            .GetByIdAsync(transaction.LoanId);
-
-    if (loan == null)
-        throw new Exception(
-            "Loan not found.");
-
-    // SECURITY
-    if (loan.UserId != userId)
-        throw new UnauthorizedAccessException(
-            "You do not have access to this transaction.");
-
-    if (loan.IsClosed)
-        throw new Exception(
-            "This loan is already closed.");
-
-    // Validate Adjustment
-    if (request.TransactionType ==
-            LoanTransactionType.Adjustment &&
-        request.AdjustmentDirection == null)
+    try
     {
-        throw new Exception(
-            "Adjustment direction is required for an adjustment transaction.");
-    }
+        // =========================================================
+        // FIND TRANSACTION
+        // =========================================================
 
-    if (request.TransactionType !=
-            LoanTransactionType.Adjustment)
-    {
-        request.AdjustmentDirection = null;
-    }
-
-    // Validate Waiver
-    if (request.TransactionType ==
-            LoanTransactionType.Waiver &&
-        request.WaiverType == null)
-    {
-        throw new Exception(
-            "Waiver type is required for a waiver transaction.");
-    }
-
-    if (request.TransactionType !=
-            LoanTransactionType.Waiver)
-    {
-        request.WaiverType = null;
-    }
-
-    // Prevent duplicate reference numbers
-    if (!string.IsNullOrWhiteSpace(
-        request.ReferenceNumber))
-    {
-        var existingTransactions =
+        var transaction =
             await _transactionRepository
-                .GetAllAsync();
+                .GetByIdAsync(transactionId);
 
-        var duplicate =
-            existingTransactions.Any(t =>
-                t.Id != transactionId &&
-                !string.IsNullOrWhiteSpace(
-                    t.ReferenceNumber) &&
-                t.ReferenceNumber.Equals(
-                    request.ReferenceNumber,
-                    StringComparison.OrdinalIgnoreCase));
+        if (transaction == null)
+            return false;
 
-        if (duplicate)
+        // =========================================================
+        // FIND LOAN
+        // =========================================================
+
+        var loan =
+            await _loanRepository
+                .GetByIdAsync(transaction.LoanId);
+
+        if (loan == null)
+            throw new Exception(
+                "Loan not found.");
+
+        // =========================================================
+        // SECURITY
+        // =========================================================
+
+        if (loan.UserId != userId)
+            throw new UnauthorizedAccessException(
+                "You do not have access to this transaction.");
+				
+		// =========================================================
+		// CLOSED LOAN PROTECTION
+		// =========================================================
+
+		if (loan.IsClosed)
+		{
+			throw new Exception(
+				"This loan is closed. Reopen the loan before editing its transactions.");
+		}
+
+        // =========================================================
+        // VALIDATE ADJUSTMENT
+        // =========================================================
+
+        if (request.TransactionType ==
+                LoanTransactionType.Adjustment &&
+            request.AdjustmentDirection == null)
         {
             throw new Exception(
-                "A transaction with this reference number already exists.");
+                "Adjustment direction is required for an adjustment transaction.");
         }
+
+        if (request.TransactionType !=
+                LoanTransactionType.Adjustment)
+        {
+            request.AdjustmentDirection = null;
+        }
+
+        // =========================================================
+        // VALIDATE WAIVER
+        // =========================================================
+
+        if (request.TransactionType ==
+                LoanTransactionType.Waiver &&
+            request.WaiverType == null)
+        {
+            throw new Exception(
+                "Waiver type is required for a waiver transaction.");
+        }
+
+        if (request.TransactionType !=
+                LoanTransactionType.Waiver)
+        {
+            request.WaiverType = null;
+        }
+
+        // =========================================================
+        // PREVENT DUPLICATE REFERENCE NUMBER
+        // =========================================================
+
+        if (!string.IsNullOrWhiteSpace(
+            request.ReferenceNumber))
+        {
+            var existingTransactions =
+                await _transactionRepository
+                    .GetAllAsync();
+
+            var duplicate =
+                existingTransactions.Any(t =>
+                    t.Id != transactionId &&
+                    !string.IsNullOrWhiteSpace(
+                        t.ReferenceNumber) &&
+                    t.ReferenceNumber.Equals(
+                        request.ReferenceNumber,
+                        StringComparison.OrdinalIgnoreCase));
+
+            if (duplicate)
+            {
+                throw new Exception(
+                    "A transaction with this reference number already exists.");
+            }
+        }
+
+        // =========================================================
+        // STEP 1: REVERSE OLD TRANSACTION EFFECT
+        // =========================================================
+
+        var oldBalanceEffect =
+            LoanBalanceCalculator.GetBalanceEffect(
+                transaction.TransactionType,
+                transaction.Amount,
+                transaction.AdjustmentDirection,
+                transaction.WaiverType);
+
+        loan.CurrentBalance -= oldBalanceEffect;
+
+        if (loan.CurrentBalance < 0)
+        {
+            throw new Exception(
+                "Updating this transaction would result in a negative loan balance.");
+        }
+
+        // =========================================================
+        // STEP 2: PREVENT REPAYMENT OVERPAYMENT
+        // =========================================================
+
+        if (request.TransactionType ==
+                LoanTransactionType.Repayment &&
+            request.Amount > loan.CurrentBalance)
+        {
+            throw new Exception(
+                $"Repayment amount cannot exceed the outstanding balance of " +
+                $"{loan.CurrentBalance:N2}.");
+        }
+
+        // =========================================================
+        // STEP 3: APPLY NEW TRANSACTION EFFECT
+        // =========================================================
+
+        var newBalanceEffect =
+            LoanBalanceCalculator.GetBalanceEffect(
+                request.TransactionType,
+                request.Amount,
+                request.AdjustmentDirection,
+                request.WaiverType);
+
+        var newBalance =
+            loan.CurrentBalance +
+            newBalanceEffect;
+
+        // =========================================================
+        // PREVENT NEGATIVE BALANCE
+        // =========================================================
+
+        if (newBalance < 0)
+        {
+            throw new Exception(
+                $"Transaction would make the loan balance negative. " +
+                $"Current balance is {loan.CurrentBalance:N2}.");
+        }
+
+        loan.CurrentBalance = newBalance;
+
+        // =========================================================
+        // STEP 4: UPDATE TRANSACTION
+        // =========================================================
+
+        transaction.TransactionType =
+            request.TransactionType;
+
+        transaction.Amount =
+            request.Amount;
+
+        transaction.TransactionDate =
+            request.TransactionDate.Kind ==
+                DateTimeKind.Utc
+                ? request.TransactionDate
+                : request.TransactionDate.ToUniversalTime();
+
+        transaction.ReferenceNumber =
+            request.ReferenceNumber?.Trim() ??
+            string.Empty;
+
+        transaction.PaymentMethod =
+            request.PaymentMethod;
+
+        transaction.Description =
+            request.Description?.Trim() ??
+            string.Empty;
+
+        transaction.AdjustmentDirection =
+            request.AdjustmentDirection;
+
+        transaction.WaiverType =
+            request.WaiverType;
+
+        // =========================================================
+        // STEP 5: RECALCULATE LOAN STATUS
+        // =========================================================
+
+        if (loan.CurrentBalance == 0)
+		{
+			loan.IsClosed = true;
+			loan.ClosedAt = DateTime.UtcNow;
+		}
+
+        // =========================================================
+        // STEP 6: SAVE
+        // =========================================================
+
+        await _unitOfWork.SaveChangesAsync();
+
+        // =========================================================
+        // STEP 7: REFRESH CONTACT TRUST
+        // =========================================================
+
+        await _contactTrustService.RefreshForLoanAsync(
+            userId,
+            loan.Id);
+
+        // =========================================================
+        // STEP 8: COMMIT
+        // =========================================================
+
+        await _unitOfWork.CommitTransactionAsync();
+
+        return true;
     }
-
-    // -----------------------------------------------------
-    // STEP 1: REVERSE OLD EFFECT
-    // -----------------------------------------------------
-
-    var oldBalanceEffect =
-		GetBalanceEffect(
-			transaction.TransactionType,
-			transaction.Amount,
-			transaction.AdjustmentDirection,
-			transaction.WaiverType);
-
-    loan.CurrentBalance -=
-        oldBalanceEffect;
-
-    if (loan.CurrentBalance < 0)
+    catch
     {
-        throw new Exception(
-            "Updating this transaction would result in a negative loan balance.");
+        await _unitOfWork.RollbackTransactionAsync();
+
+        throw;
     }
-
-    // -----------------------------------------------------
-	// STEP 2: APPLY NEW EFFECT
-	// -----------------------------------------------------
-
-	var newBalanceEffect =
-		GetBalanceEffect(
-			request.TransactionType,
-			request.Amount,
-			request.AdjustmentDirection,
-			request.WaiverType);
-
-	var newBalance =
-		loan.CurrentBalance +
-		newBalanceEffect;
-
-	if (newBalance < 0)
-	{
-		throw new Exception(
-			$"Transaction would make the loan balance negative. " +
-			$"Current balance is {loan.CurrentBalance:N2}.");
-	}
-
-	loan.CurrentBalance =
-		newBalance;
-
-    // -----------------------------------------------------
-    // STEP 3: UPDATE TRANSACTION
-    // -----------------------------------------------------
-
-    transaction.TransactionType =
-        request.TransactionType;
-
-    transaction.Amount =
-        request.Amount;
-
-    transaction.TransactionDate =
-        request.TransactionDate.Kind ==
-            DateTimeKind.Utc
-            ? request.TransactionDate
-            : request.TransactionDate.ToUniversalTime();
-
-    transaction.ReferenceNumber =
-        request.ReferenceNumber ??
-        string.Empty;
-
-    transaction.PaymentMethod =
-        request.PaymentMethod;
-
-    transaction.Description =
-        request.Description ??
-        string.Empty;
-
-    transaction.AdjustmentDirection =
-        request.AdjustmentDirection;
-
-    transaction.WaiverType =
-        request.WaiverType;
-
-    // -----------------------------------------------------
-    // STEP 4: RECALCULATE LOAN STATUS
-    // -----------------------------------------------------
-
-    if (loan.CurrentBalance == 0)
-    {
-        loan.IsClosed = true;
-        loan.ClosedAt = DateTime.UtcNow;
-    }
-    else
-    {
-        loan.IsClosed = false;
-        loan.ClosedAt = null;
-    }
-
-    // -----------------------------------------------------
-    // STEP 5: SAVE
-    // -----------------------------------------------------
-
-    await _transactionRepository
-        .SaveChangesAsync();
-
-    await _loanRepository
-        .SaveChangesAsync();
-
-    return true;
 }
 
 // =========================================================
@@ -658,60 +755,4 @@ private static LoanTransactionResponse MapToResponse(
     };
 }
 
-// =========================================================
-// BALANCE EFFECT
-// =========================================================
-
-private static decimal GetBalanceEffect(
-    LoanTransactionType transactionType,
-    decimal amount,
-    AdjustmentDirection? adjustmentDirection,
-    WaiverType? waiverType)
-{
-    return transactionType switch
-    {
-        LoanTransactionType.Disbursement
-            => 0,
-
-        LoanTransactionType.Repayment
-            => -amount,
-
-        LoanTransactionType.Interest
-            => amount,
-
-        LoanTransactionType.Penalty
-            => amount,
-
-        LoanTransactionType.Adjustment
-            => adjustmentDirection switch
-            {
-                AdjustmentDirection.Increase
-                    => amount,
-
-                AdjustmentDirection.Decrease
-                    => -amount,
-
-                _ => throw new Exception(
-                    "Adjustment direction is required.")
-            },
-
-        LoanTransactionType.Refund
-            => amount,
-
-        LoanTransactionType.Waiver
-            => waiverType switch
-            {
-                WaiverType.Principal => -amount,
-                WaiverType.Interest => -amount,
-                WaiverType.Penalty => -amount,
-                WaiverType.Other => -amount,
-
-                _ => throw new Exception(
-                    "Waiver type is required.")
-            },
-
-        _ => throw new Exception(
-            "Invalid transaction type.")
-    };
-}
 }
